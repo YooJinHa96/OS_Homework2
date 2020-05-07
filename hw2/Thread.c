@@ -8,6 +8,7 @@ void Init() {
 
 }
 */
+/*
 void InsertObjectToTail(Thread *pObj, int ObjNum)
 {
     int hashKey = ObjNum % HASH_TBL_SIZE;
@@ -26,6 +27,28 @@ void InsertObjectToTail(Thread *pObj, int ObjNum)
         pReadyQueueEnt[hashKey].pTail = pObj;
         pObj->phNext = NULL;
         pObj->phPrev = NULL;
+    }
+    pReadyQueueEnt[hashKey].queueCount++;
+}*/
+
+void InsertReadyQueueToTail(Thread *thread, int priority)
+{
+    int hashKey = priority;
+    thread->priority = priority;
+    if (pReadyQueueEnt[hashKey].pTail != NULL)
+    {
+        Thread *o = pReadyQueueEnt[hashKey].pTail;
+        pReadyQueueEnt[hashKey].pTail = thread;
+        thread->phNext = NULL;
+        thread->phPrev = o;
+        o->phNext = thread;
+    }
+    else
+    {
+        pReadyQueueEnt[hashKey].pHead = thread;
+        pReadyQueueEnt[hashKey].pTail = thread;
+        thread->phNext = NULL;
+        thread->phPrev = NULL;
     }
     pReadyQueueEnt[hashKey].queueCount++;
 }
@@ -66,7 +89,7 @@ Thread *GetObjectByNum(thread_t tid)
     }
     return NULL;
 }
-
+/*
 Thread *GetObjectFromObjFreeList()
 {
     Thread *o = pWaitingQueueTail;
@@ -87,6 +110,7 @@ Thread *GetObjectFromObjFreeList()
     }
     return o;
 }
+*/
 Thread *GetThreadFromWaitingqueue(Thread *thread)
 {
     Thread *o = pWaitingQueueHead;
@@ -273,6 +297,8 @@ int thread_resume(thread_t tid)
     if (pCurrentThead->priority < taPr)
     {
         pThreadTbEnt[tid].pThread->status = THREAD_STATUS_READY;
+        GetThreadFromWaitingqueue(pThreadTbEnt[tid].pThread);
+        InsertObjectToTail(pThreadTbEnt[tid].pThread,taPr);
     }
 }
 

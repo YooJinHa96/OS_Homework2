@@ -66,7 +66,7 @@ int thread_suspend(thread_t tid);
 int thread_cancel(thread_t tid);
 int thread_resume(thread_t tid);
 thread_t thread_self();
-
+void InsertReadyQueueToTail(Thread *thread, int priority);
 void Init();
 void InsertObjectToTail(Thread *pObj, int ObjNum);
 void InsertObjectToHead(Thread *pObj, int objNum);
