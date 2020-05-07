@@ -171,7 +171,7 @@ int thread_create(thread_t *thread, thread_attr_t *attr, int priority,
 
     pid = clone((void *)start_routine, (void *)pStack + STACK_SIZE, flags, arg);
     printf("thread id : %d\n", pid);
-    // kill(pid, SIGSTOP);
+    kill(pid, SIGSTOP);
     for (int i = 0; i < MAX_THREAD_NUM; i++)
     {
         if (!pThreadTbEnt[i].bUsed)
@@ -185,19 +185,27 @@ int thread_create(thread_t *thread, thread_attr_t *attr, int priority,
             break;
         }
     }
-    /*
-        if (pCurrentThead == NULL) {
-            kill(pid, SIGCONT);
-            pCurrentThead = pThreadTbEnt[*thread].pThread;
-            pThreadTbEnt[*thread].pThread->status = THREAD_STATUS_RUN;
+    
+        if (pCurrentThead == NULL) { //Testcase Thread create 
+                InsertObjectToTail(pThreadTbEnt[*thread].pThread, priority);
+                pThreadTbEnt[*thread].pThread->status = THREAD_STATUS_READY;
         } else {
             if (pCurrentThead->priority <
        pThreadTbEnt[*thread].pThread->priority) {
                 InsertObjectToTail(pThreadTbEnt[*thread].pThread, priority);
                 pThreadTbEnt[*thread].pThread->status = THREAD_STATUS_READY;
             }
+            else{
+                InsertObjectToTail(pCurrentThead,pCurrentThead->priority );
+                pCurrentThead->status=THREAD_STATUS_READY;
+                pThreadTbEnt[*thread].pThread->status=THREAD_STATUS_RUN;
+                __ContextSwitch(pCurrentThead->pid,pThreadTbEnt[*thread].pThread->pid);
+
+
+            }
         }
-        */
+        return *thread;
+        
 }
 
 int thread_suspend(thread_t tid)
