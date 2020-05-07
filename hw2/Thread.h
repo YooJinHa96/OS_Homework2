@@ -58,6 +58,7 @@ ReadyQueueEnt pReadyQueueEnt[MAX_READYQUEUE_NUM];
 Thread *pWaitingQueueHead;
 Thread *pWaitingQueueTail;
 ThreadTblEnt pThreadTbEnt[MAX_THREAD_NUM];
+Thread *GetThreadFromWaitingqueue(Thread *thread);//  
 
 int thread_create(thread_t *thread, thread_attr_t *attr, int priority,
                   void *(*start_routine)(void *), void *arg);

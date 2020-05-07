@@ -87,7 +87,44 @@ Thread *GetObjectFromObjFreeList()
     }
     return o;
 }
+Thread *GetThreadFromWaitingqueue(Thread *thread)
+{
+    Thread *o = pWaitingQueueHead;
 
+    if (pWaitingQueueHead == NULL)
+    {
+        return NULL;
+    }
+    for (o; o != NULL; o = o->phNext)
+    {
+        if (o == thread)
+        {
+            if(o==pWaitingQueueHead){
+                pWaitingQueueHead=o->phNext;
+            }
+            else if(o==pWaitingQueueTail){
+                pWaitingQueueTail=o->phPrev;
+            }
+            else{
+                o->phNext->phPrev=o->phPrev;
+                o->phPrev->phNext=o->phNext;
+            }
+            return o;
+        }
+    }
+    /*
+    else if (o->phNext == NULL)
+    {
+        pWaitingQueueTail = NULL;
+        pWaitingQueueTail = NULL;
+    }
+    else
+    {
+        pWaitingQueueTail = o->phPrev;
+        o->phPrev->phNext = NULL;
+    }*/
+    return o;
+}
 BOOL DeleteObject(Thread *pObj)
 {
     int hashkey = pObj->priority;
@@ -139,7 +176,7 @@ BOOL DeleteObject(Thread *pObj)
     return 0;
 }
 
-//고칠 부분
+//고칠 부분 ->  check
 void InsertObjectIntoObjFreeList(Thread *pObj)
 {
     pObj->priority = OBJ_INVALID;
@@ -185,27 +222,29 @@ int thread_create(thread_t *thread, thread_attr_t *attr, int priority,
             break;
         }
     }
-    
-        if (pCurrentThead == NULL) { //Testcase Thread create 
-                InsertObjectToTail(pThreadTbEnt[*thread].pThread, priority);
-                pThreadTbEnt[*thread].pThread->status = THREAD_STATUS_READY;
-        } else {
-            if (pCurrentThead->priority <
-       pThreadTbEnt[*thread].pThread->priority) {
-                InsertObjectToTail(pThreadTbEnt[*thread].pThread, priority);
-                pThreadTbEnt[*thread].pThread->status = THREAD_STATUS_READY;
-            }
-            else{
-                InsertObjectToTail(pCurrentThead,pCurrentThead->priority );
-                pCurrentThead->status=THREAD_STATUS_READY;
-                pThreadTbEnt[*thread].pThread->status=THREAD_STATUS_RUN;
-                __ContextSwitch(pCurrentThead->pid,pThreadTbEnt[*thread].pThread->pid);
 
-
-            }
+    if (pCurrentThead == NULL)
+    { //Testcase Thread create
+        InsertObjectToTail(pThreadTbEnt[*thread].pThread, priority);
+        pThreadTbEnt[*thread].pThread->status = THREAD_STATUS_READY;
+    }
+    else
+    {
+        if (pCurrentThead->priority <
+            pThreadTbEnt[*thread].pThread->priority)
+        {
+            InsertObjectToTail(pThreadTbEnt[*thread].pThread, priority);
+            pThreadTbEnt[*thread].pThread->status = THREAD_STATUS_READY;
         }
-        return *thread;
-        
+        else
+        {
+            InsertObjectToTail(pCurrentThead, pCurrentThead->priority);
+            pCurrentThead->status = THREAD_STATUS_READY;
+            pThreadTbEnt[*thread].pThread->status = THREAD_STATUS_RUN;
+            __ContextSwitch(pCurrentThead->pid, pThreadTbEnt[*thread].pThread->pid);
+        }
+    }
+    return *thread;
 }
 
 int thread_suspend(thread_t tid)
@@ -227,7 +266,15 @@ int thread_suspend(thread_t tid)
 
 int thread_cancel(thread_t tid) {}
 
-int thread_resume(thread_t tid) {}
+int thread_resume(thread_t tid)
+{
+    int taPr = pThreadTbEnt[tid].pThread->priority;
+
+    if (pCurrentThead->priority < taPr)
+    {
+        pThreadTbEnt[tid].pThread->status = THREAD_STATUS_READY;
+    }
+}
 
 thread_t thread_self()
 {
