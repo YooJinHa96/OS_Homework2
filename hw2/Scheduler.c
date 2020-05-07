@@ -4,4 +4,9 @@
 
 int RunScheduler(void) {}
 
-void __ContextSwitch(int curpid, int newpid) {}
+void __ContextSwitch(int curpid, int newpid) {
+
+    kill(curpid,SIGSTOP);
+    kill(newpid,SIGCONT);
+
+}
