@@ -123,15 +123,18 @@ Thread *GetThreadFromWaitingqueue(Thread *thread)
     {
         if (o == thread)
         {
-            if(o==pWaitingQueueHead){
-                pWaitingQueueHead=o->phNext;
+            if (o == pWaitingQueueHead)
+            {
+                pWaitingQueueHead = o->phNext;
             }
-            else if(o==pWaitingQueueTail){
-                pWaitingQueueTail=o->phPrev;
+            else if (o == pWaitingQueueTail)
+            {
+                pWaitingQueueTail = o->phPrev;
             }
-            else{
-                o->phNext->phPrev=o->phPrev;
-                o->phPrev->phNext=o->phNext;
+            else
+            {
+                o->phNext->phPrev = o->phPrev;
+                o->phPrev->phNext = o->phNext;
             }
             return o;
         }
@@ -249,7 +252,7 @@ int thread_create(thread_t *thread, thread_attr_t *attr, int priority,
 
     if (pCurrentThead == NULL)
     { //Testcase Thread create
-        InsertObjectToTail(pThreadTbEnt[*thread].pThread, priority);
+        InsertReadyQueueToTail(pThreadTbEnt[*thread].pThread, priority);
         pThreadTbEnt[*thread].pThread->status = THREAD_STATUS_READY;
     }
     else
@@ -257,12 +260,12 @@ int thread_create(thread_t *thread, thread_attr_t *attr, int priority,
         if (pCurrentThead->priority <
             pThreadTbEnt[*thread].pThread->priority)
         {
-            InsertObjectToTail(pThreadTbEnt[*thread].pThread, priority);
+            InsertReadyQueueToTail(pThreadTbEnt[*thread].pThread, priority);
             pThreadTbEnt[*thread].pThread->status = THREAD_STATUS_READY;
         }
         else
         {
-            InsertObjectToTail(pCurrentThead, pCurrentThead->priority);
+            InsertReadyQueueToTail(pCurrentThead, pCurrentThead->priority);
             pCurrentThead->status = THREAD_STATUS_READY;
             pThreadTbEnt[*thread].pThread->status = THREAD_STATUS_RUN;
             __ContextSwitch(pCurrentThead->pid, pThreadTbEnt[*thread].pThread->pid);
@@ -288,18 +291,60 @@ int thread_suspend(thread_t tid)
     }
 }
 
-int thread_cancel(thread_t tid) {}
+int thread_cancel(thread_t tid)
+{
+    if(!pThreadTbEnt[tid].bUsed){ //error
+        return -1; 
+    }
+    kill(pThreadTbEnt[tid].pThread->pid, SIGKILL);
+    switch (pThreadTbEnt[tid].pThread->status)
+    {
+    case THREAD_STATUS_READY:
+    {
+        DeleteObject(pThreadTbEnt[tid].pThread);
+        break;
+    }
+    case THREAD_STATUS_WAIT:
+    {
+        GetThreadFromWaitingqueue(pThreadTbEnt[tid].pThread);
+        break;
+    }
+
+    default:
+        break;
+    }
+    return 0;
+}
 
 int thread_resume(thread_t tid)
 {
+    if (pThreadTbEnt[tid].bUsed == 0)
+    {
+        return -1;
+    }
+
     int taPr = pThreadTbEnt[tid].pThread->priority;
 
     if (pCurrentThead->priority < taPr)
     {
         pThreadTbEnt[tid].pThread->status = THREAD_STATUS_READY;
-        GetThreadFromWaitingqueue(pThreadTbEnt[tid].pThread);
-        InsertObjectToTail(pThreadTbEnt[tid].pThread,taPr);
+        if (GetThreadFromWaitingqueue(pThreadTbEnt[tid].pThread) == NULL)
+        {
+            return -1;
+        }
+        InsertReadyQueueToTail(pThreadTbEnt[tid].pThread, taPr);
     }
+    else
+    {
+        InsertReadyQueueToTail(pCurrentThead, pCurrentThead->priority);
+        pCurrentThead->status = THREAD_STATUS_READY;
+        if (GetThreadFromWaitingqueue(pThreadTbEnt[tid].pThread) == NULL)
+        {
+            return -1;
+        }
+        __ContextSwitch(pCurrentThead->pid, pThreadTbEnt[tid].pThread->pid);
+    }
+    return 0;
 }
 
 thread_t thread_self()
