@@ -69,7 +69,7 @@ thread_t thread_self();
 void Init();
 void InsertObjectToTail(Thread *pObj, int ObjNum);
 void InsertObjectToHead(Thread *pObj, int objNum);
-Thread *GetObjectByNum(int objnum);
+Thread *GetObjectByNum(thread_t tid);
 Thread *GetObjectFromObjFreeList();
 BOOL DeleteObject(Thread *pObj);
 void InsertObjectIntoObjFreeList(Thread *pObj);

@@ -45,11 +45,12 @@ void InsertObjectToHead(Thread *pObj, int objNum) {
     pReadyQueueEnt[hashKey].queueCount++;
 }
 
-Thread *GetObjectByNum(int objnum) {
-    int hashKey = objnum % HASH_TBL_SIZE;
+Thread *GetObjectByNum(thread_t tid) {
+    int hashKey = pThreadTbEnt[tid].pThread->priority;
+    pid_t pid = pThreadTbEnt[tid].pThread->pid;
     Thread *o;
     for (o = pReadyQueueEnt[hashKey].pHead; o != NULL; o = o->phNext) {
-        if (o->priority == objnum) {
+        if (o->pid == pid) {
             return o;
         }
     }
@@ -106,18 +107,19 @@ BOOL DeleteObject(Thread *pObj) {
     return 0;
 }
 
+//고칠 부분
 void InsertObjectIntoObjFreeList(Thread *pObj) {
     pObj->priority = OBJ_INVALID;
-    if (pWaitingQueueHead == NULL) {
+    if (pWaitingQueueTail == NULL) {
         pWaitingQueueHead = pObj;
         pWaitingQueueTail = pObj;
         pObj->phNext = NULL;
         pObj->phPrev = NULL;
     } else {
-        Thread *o = pWaitingQueueHead;
-        pWaitingQueueHead = pObj;
-        pObj->phNext = o;
-        pObj->phPrev = NULL;
+        Thread *o = pWaitingQueueTail;
+        pWaitingQueueTail = pObj;
+        pObj->phNext = NULL;
+        pObj->phPrev = o;
         o->phPrev = pObj;
     }
 }
@@ -126,12 +128,11 @@ int thread_create(thread_t *thread, thread_attr_t *attr, int priority,
                   void *(*start_routine)(void *), void *arg) {
     pid_t pid;
     int flags = SIGCHLD | CLONE_FS | CLONE_FILES | CLONE_SIGHAND | CLONE_VM;
-    char *pStack;
+    void *pStack;
     int pr = priority;
     pStack = malloc(STACK_SIZE);
 
-    pid =
-        clone((void *)start_routine, (char *)pStack + STACK_SIZE, flags, &arg);
+    pid = clone((void *)start_routine, (void *)pStack + STACK_SIZE, flags, arg);
     printf("thread id : %d\n", pid);
     // kill(pid, SIGSTOP);
     for (int i = 0; i < MAX_THREAD_NUM; i++) {
@@ -160,10 +161,24 @@ int thread_create(thread_t *thread, thread_attr_t *attr, int priority,
         */
 }
 
-int thread_suspend(thread_t tid) {}
+int thread_suspend(thread_t tid) {
+
+    Thread *thread = GetObjectByNum(tid);
+    // DeleteObject(tid);
+    pThreadTbEnt[tid].pThread->status = THREAD_STATUS_WAIT;
+}
 
 int thread_cancel(thread_t tid) {}
 
 int thread_resume(thread_t tid) {}
 
-thread_t thread_self() {}
+thread_t thread_self() {
+    pid_t pid = getpid();
+    thread_t tid;
+    for (int i = 0; MAX_THREAD_NUM; i++) {
+        if (pThreadTbEnt[i].pThread->pid == pid) {
+            tid = i;
+            return tid;
+        }
+    }
+}

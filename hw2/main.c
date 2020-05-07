@@ -1,11 +1,13 @@
 #include "Init.h"
 #include "Scheduler.h"
+#include "TestCase1.h"
 #include "Thread.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #define STACK_SIZE 1024 * 64
+/*
 void *threadFunc2(void *arg);
 void *threadFunc1(void *arg) {
     thread_t tid;
@@ -40,4 +42,24 @@ int main() {
             break;
         }
     }
+}
+*/
+
+int main() {
+    thread_t tid;
+    int arg = 100;
+    Init();
+    printf("thread start2\n");
+    thread_create(&tid, NULL, 0, (void *)TestCase1, 0);
+    // printf("tid : %d", tid);
+    waitpid(pThreadTbEnt[tid].pThread->pid, NULL, 0);
+    int i = 0;
+    // while (1) {
+    //  if (pThreadTbEnt[i].bUsed == 1) {
+    //    printf("%d\n", i);
+    //   i++;
+    //} else {
+    //  break;
+    // }
+    // }
 }
