@@ -73,7 +73,7 @@ Thread *GetObjectFromObjFreeList() {
 }
 
 BOOL DeleteObject(Thread *pObj) {
-    int hashkey = pObj->priority % HASH_TBL_SIZE;
+    int hashkey = pObj->priority;
     Thread *o = pReadyQueueEnt[hashkey].pHead;
     if (pReadyQueueEnt[hashkey].queueCount == 0) {
         return 0;
@@ -164,7 +164,7 @@ int thread_create(thread_t *thread, thread_attr_t *attr, int priority,
 int thread_suspend(thread_t tid) {
 
     Thread *thread = GetObjectByNum(tid);
-    // DeleteObject(tid);
+     DeleteObject(thread);
     pThreadTbEnt[tid].pThread->status = THREAD_STATUS_WAIT;
 }
 
