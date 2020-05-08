@@ -58,7 +58,7 @@ ReadyQueueEnt pReadyQueueEnt[MAX_READYQUEUE_NUM];
 Thread *pWaitingQueueHead;
 Thread *pWaitingQueueTail;
 ThreadTblEnt pThreadTbEnt[MAX_THREAD_NUM];
-Thread *GetThreadFromWaitingqueue(Thread *thread);//  
+Thread *GetThreadFromWaitingqueue(Thread *thread); //
 
 int thread_create(thread_t *thread, thread_attr_t *attr, int priority,
                   void *(*start_routine)(void *), void *arg);
@@ -68,6 +68,7 @@ int thread_resume(thread_t tid);
 thread_t thread_self();
 void InsertReadyQueueToTail(Thread *thread, int priority);
 void Init();
+Thread *GetThreadFromReadyqueueHead(int priority);
 void InsertObjectToTail(Thread *pObj, int ObjNum);
 void InsertObjectToHead(Thread *pObj, int objNum);
 Thread *GetObjectByNum(thread_t tid);
