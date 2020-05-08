@@ -75,4 +75,7 @@ Thread *GetObjectByNum(thread_t tid);
 Thread *GetObjectFromObjFreeList();
 BOOL DeleteObject(Thread *pObj);
 void InsertObjectIntoObjFreeList(Thread *pObj);
+
+int thread_join(thread_t tid, void **retval);
+int thread_exit(void *retval);
 #endif /* __THREAD_H__ */
