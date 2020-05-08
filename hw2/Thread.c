@@ -307,3 +307,22 @@ thread_t thread_self() {
         }
     }
 }
+int thread_exit(void *retval) {
+    Thread *thread = pCurrentThead;
+    *(int *)retval = thread->exitCode;
+    Thread *newThread;
+    InsertObjectIntoObjFreeList(thread);
+    thread->status = THREAD_STATUS_ZOMBIE;
+
+    for (int i = 0; i < MAX_READYQUEUE_NUM; i++) {
+        if (pReadyQueueEnt[i].queueCount != 0) {
+            newThread = GetThreadFromReadyqueueHead(i);
+            DeleteObject(newThread);
+            newThread->status = THREAD_STATUS_RUN;
+            __ContextSwitch(thread->pid, newThread->pid);
+            exit(1);
+            break;
+        }
+    }
+    return -1;
+}
