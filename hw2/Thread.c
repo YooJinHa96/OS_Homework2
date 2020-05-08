@@ -256,10 +256,14 @@ int thread_cancel(thread_t tid) {
     switch (pThreadTbEnt[tid].pThread->status) {
     case THREAD_STATUS_READY: {
         DeleteObject(pThreadTbEnt[tid].pThread);
+        pThreadTbEnt[tid].bUsed = 0;
+        free(pThreadTbEnt[tid].pThread);
         break;
     }
     case THREAD_STATUS_WAIT: {
         GetThreadFromWaitingqueue(pThreadTbEnt[tid].pThread);
+        pThreadTbEnt[tid].bUsed = 0;
+        free(pThreadTbEnt[tid].pThread);
         break;
     }
 
