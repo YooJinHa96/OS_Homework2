@@ -44,6 +44,10 @@ int RunScheduler(void) {
     }
     if (count == MAX_READYQUEUE_NUM) {
         alarm(TIMESLICE);
+    } else if (pCurrentThead == NULL) { // thread test case start
+        pCurrentThead =
+            GetThreadFromReadyqueueHead(0); // Assume Testcase prirority = 0
+        kill(pCurrentThead->pid, SIGCONT);
     } else if (count < MAX_READYQUEUE_NUM) {
         InsertReadyQueueToTail(pCurrentThead, pCurrentThead->priority);
         for (int i = 0; i < MAX_READYQUEUE_NUM; i++) {
@@ -63,4 +67,5 @@ void __ContextSwitch(int curpid, int newpid) {
 
     kill(curpid, SIGSTOP);
     kill(newpid, SIGCONT);
+    pCurrentThead = pThreadTbEnt[newpid].pThread;
 }

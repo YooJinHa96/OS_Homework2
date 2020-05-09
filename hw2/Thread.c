@@ -203,7 +203,7 @@ int thread_create(thread_t *thread, thread_attr_t *attr, int priority,
     pStack = malloc(STACK_SIZE);
 
     pid = clone((void *)start_routine, (void *)pStack + STACK_SIZE, flags, arg);
-    printf("thread id : %d\n", pid);
+    // printf("thread id : %d\n", pid);
     kill(pid, SIGSTOP);
     for (int i = 0; i < MAX_THREAD_NUM; i++) {
         if (!pThreadTbEnt[i].bUsed) {
@@ -240,7 +240,9 @@ int thread_suspend(thread_t tid) {
     Thread *thread = GetObjectByNum(tid);
     if (thread == NULL) {
         return -1;
-    } else {
+    }
+
+    else if (thread->status == THREAD_STATUS_READY) {
         DeleteObject(thread);
         pThreadTbEnt[tid].pThread->status = THREAD_STATUS_WAIT;
         InsertObjectIntoObjFreeList(thread);
@@ -326,6 +328,22 @@ int thread_exit(void *retval) {
     }
     return -1;
 }
-int thread_join(thread_t tid, void** retval){
-    pause();
+void sig_handler(int signum) {
+    if (signum == SIGCHLD) {
+    }
+}
+int thread_join(thread_t tid, void **retval) { // stack ??
+    if (pThreadTbEnt[tid].bUsed == 0) {
+        return -1;
+    }
+    if (pThreadTbEnt[tid].pThread->status == THREAD_STATUS_ZOMBIE) {
+
+        pThreadTbEnt[tid].pThread->exitCode = *(int *)*retval;
+        GetThreadFromWaitingqueue(pThreadTbEnt[tid].pThread);
+        pThreadTbEnt[tid].bUsed = 0;
+        free(pThreadTbEnt[tid].pThread);
+        return 0;
+    } else {
+        pause();
+    }
 }
