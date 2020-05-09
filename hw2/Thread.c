@@ -309,7 +309,8 @@ thread_t thread_self() {
 }
 int thread_exit(void *retval) {
     Thread *thread = pCurrentThead;
-    *(int *)retval = thread->exitCode;
+    thread->exitCode = *(int *)retval;
+
     Thread *newThread;
     InsertObjectIntoObjFreeList(thread);
     thread->status = THREAD_STATUS_ZOMBIE;
@@ -329,3 +330,5 @@ int thread_exit(void *retval) {
 int thread_join(thread_t tid, void** retval){
     pause();
 }
+ 
+//Watingqueue   zombie status compare?
