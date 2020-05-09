@@ -1,6 +1,6 @@
 #include "Init.h"
 #include "Scheduler.h"
-#include "TestCase1.h"
+//#include "TestCase1.h"
 #include "Thread.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -52,8 +52,10 @@ int main() {
     printf("thread start2\n");
     thread_create(&tid, NULL, 0, (void *)TestCase2, 0);
     // printf("tid : %d", tid);
-    waitpid(pThreadTbEnt[tid].pThread->pid, NULL, 0);
-    int i = 0;
+    RunScheduler();
+
+    while (1) {
+    }
     // while (1) {
     //  if (pThreadTbEnt[i].bUsed == 1) {
     //    printf("%d\n", i);
