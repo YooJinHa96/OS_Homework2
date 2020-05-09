@@ -252,14 +252,14 @@ int thread_create(thread_t *thread, thread_attr_t *attr, int priority,
 int thread_suspend(thread_t tid) {
 
     Thread *thread = GetObjectByNum(tid);
-    printf("status %d\n", thread->status);
     if (thread == NULL) {
         return -1;
     } else if (thread->status == THREAD_STATUS_READY) {
-        printf("suspend\n");
         DeleteObject(thread);
         pThreadTbEnt[tid].pThread->status = THREAD_STATUS_WAIT;
         InsertObjectIntoObjFreeList(thread);
+        return 0;
+    } else if (thread->status == THREAD_STATUS_WAIT) {
         return 0;
     }
 }
