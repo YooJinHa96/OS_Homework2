@@ -10,8 +10,6 @@
 #include <unistd.h>
 #define STACK_SIZE 1024 * 64
 #define HASH_TBL_SIZE (8)
-#define MAX_OBJLIST_NUM (3)
-#define OBJ_INVALID (-1)
 
 #define TIMESLICE (2)
 #define MAX_READYQUEUE_NUM (8)

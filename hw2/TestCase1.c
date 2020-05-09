@@ -1,6 +1,7 @@
 #include "TestCase1.h"
 
-void *Tc1ThreadProc(void *param) {
+void *Tc1ThreadProc(void *param)
+{
     thread_t tid = 0;
     int count = 0;
     int i;
@@ -8,19 +9,21 @@ void *Tc1ThreadProc(void *param) {
 
     tid = thread_self();
 
-    for (int i = 0; i < 5; i++) {
-        // sleep(2);
+    for (int i = 0; i < 5; i++)
+    {
+        sleep(2);
         printf("Tc1ThreadProc: my thread id (%d), arg is (%d)\n", (int)tid,
                *((int *)param));
         count++;
     }
 
     retVal = (int *)param;
-    // thread_exit(retVal);
+    thread_exit(retVal);
     return NULL;
 }
 
-void TestCase1(void) {
+void TestCase1(void)
+{
     thread_t tid[TOTAL_THREAD_NUM];
     int result[TOTAL_THREAD_NUM];
 
@@ -32,12 +35,12 @@ void TestCase1(void) {
     thread_create(&tid[3], NULL, 1, (void *)Tc1ThreadProc, (void *)&i4);
     thread_create(&tid[4], NULL, 1, (void *)Tc1ThreadProc, (void *)&i5);
 
-    while (1) {
-    }
-    for (i = 0; i < TOTAL_THREAD_NUM; i++) {
+    //while(1);
+    for (i = 0; i < TOTAL_THREAD_NUM; i++)
+    {
         int *retVal;
-        // thread_join(tid[i],(void **)&retVal);
-
+        thread_join(tid[i], (void **)&retVal);
+        printf("end\n");
         printf("Thread [ %d ] is finish Return : [ %d ] \n", (int)tid[i],
                *retVal);
     }
