@@ -44,13 +44,13 @@ int main() {
     }
 }
 */
-
+#include "TestCase2.h"
 int main() {
     thread_t tid;
     int arg = 100;
     Init();
     printf("thread start2\n");
-    thread_create(&tid, NULL, 0, (void *)TestCase1, 0);
+    thread_create(&tid, NULL, 0, (void *)TestCase2, 0);
     // printf("tid : %d", tid);
     waitpid(pThreadTbEnt[tid].pThread->pid, NULL, 0);
     int i = 0;
