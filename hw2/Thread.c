@@ -326,3 +326,6 @@ int thread_exit(void *retval) {
     }
     return -1;
 }
+int thread_join(thread_t tid, void** retval){
+    pause();
+}
