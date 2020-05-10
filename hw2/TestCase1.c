@@ -11,12 +11,14 @@ void *Tc1ThreadProc(void *param)
 
     for (int i = 0; i < 5; i++)
     {
-        sleep(2);
+         sleep(2);
+        
         printf("Tc1ThreadProc: my thread id (%d), arg is (%d)\n", (int)tid,
-               *((int *)param));
-        count++;
+                *((int *)param));
+         count++;
+        
     }
-
+    printf("thread end %d",tid);
     retVal = (int *)param;
     thread_exit(retVal);
     return NULL;
@@ -34,12 +36,12 @@ void TestCase1(void)
     thread_create(&tid[2], NULL, 1, (void *)Tc1ThreadProc, (void *)&i3);
     thread_create(&tid[3], NULL, 1, (void *)Tc1ThreadProc, (void *)&i4);
     thread_create(&tid[4], NULL, 1, (void *)Tc1ThreadProc, (void *)&i5);
-
-    //while(1);
+    printf("%d %d \n",getpid(),pThreadTbEnt[tid[0]].pThread->pid);
+while(1);
     for (i = 0; i < TOTAL_THREAD_NUM; i++)
     {
         int *retVal;
-        thread_join(tid[i], (void **)&retVal);
+     //  thread_join(tid[i], (void **)&retVal);
         printf("end\n");
         printf("Thread [ %d ] is finish Return : [ %d ] \n", (int)tid[i],
                *retVal);

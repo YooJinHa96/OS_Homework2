@@ -1,6 +1,6 @@
 #include "Init.h"
 #include "Scheduler.h"
-//#include "TestCase1.h"
+#include "TestCase1.h"
 #include "Thread.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -44,14 +44,13 @@ int main() {
     }
 }
 */
-#include "TestCase2.h"
+//#include "TestCase2.h"
 int main() {
     thread_t tid;
     int arg = 100;
     Init();
     printf("thread start2\n");
-    thread_create(&tid, NULL, 0, (void *)TestCase2, 0);
-    // printf("tid : %d", tid);
+    thread_create(&tid, NULL, 0, (void *)TestCase1, 0);
     RunScheduler();
 
     while (1) {
