@@ -79,7 +79,7 @@ int RunScheduler(void)
                 newThread = GetThreadFromReadyqueueHead(t_priority);
                 newThread->status = THREAD_STATUS_RUN;
                 InsertReadyQueueToTail(pCurrentThead, pCurrentThead->priority);
-                pCurrentThead->status=THREAD_STATUS_READY;
+                pCurrentThead->status = THREAD_STATUS_READY;
                 __ContextSwitch(pCurrentThead->pid, newThread->pid);
                 pCurrentThead = newThread;
                 break;
@@ -91,7 +91,10 @@ int RunScheduler(void)
 
 void __ContextSwitch(int curpid, int newpid)
 {
-    kill(curpid, SIGSTOP);
+    if (curpid != 0)
+    {
+        kill(curpid, SIGSTOP);
+    }
     kill(newpid, SIGCONT);
     // pCurrentThead = pThreadTbEnt[newpid].pThread;
 }

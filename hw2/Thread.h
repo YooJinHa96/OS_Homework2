@@ -11,7 +11,7 @@
 #define STACK_SIZE 1024 * 64
 #define HASH_TBL_SIZE (8)
 
-#define TIMESLICE (1.8)
+#define TIMESLICE (1)
 #define MAX_READYQUEUE_NUM (8)
 #define MAX_THREAD_NUM (64)
 
@@ -77,5 +77,5 @@ void InsertObjectIntoObjFreeList(Thread *pObj);
 int thread_join(thread_t tid, void **retval);
 int thread_exit(void *retval);
 
-void child_handler(int signo, siginfo_t *info, void* context);
+
 #endif /* __THREAD_H__ */

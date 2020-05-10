@@ -89,15 +89,12 @@ Thread *GetObjectByNum(thread_t tid)
     }
     return NULL;
 }
-Thread *GetThreadFromReadyqueueHead(int priority)
+Thread *SelectThreadFromReadyqueueHead(int priority)
 {
 
     int hashkey = priority;
     Thread *t = pReadyQueueEnt[hashkey].pHead;
-    if (DeleteObject(t) == 0)
-    {
-        printf("delete error\n");
-    }
+
     if (t != NULL)
     {
         return t;
@@ -107,28 +104,26 @@ Thread *GetThreadFromReadyqueueHead(int priority)
         return NULL;
     }
 }
-/*
-Thread *GetObjectFromObjFreeList()
+Thread *GetThreadFromReadyqueueHead(int priority)
 {
-    Thread *o = pWaitingQueueTail;
 
-    if (pWaitingQueueTail == NULL)
+    int hashkey = priority;
+    Thread *t = pReadyQueueEnt[hashkey].pHead;
+    if (DeleteObject(t) == 0)
     {
-        return NULL;
+        printf("delete error\n");
     }
-    else if (o->phPrev == NULL)
+    
+    if (t != NULL)
     {
-        pWaitingQueueTail = NULL;
-        pWaitingQueueTail = NULL;
+        return t;
     }
     else
     {
-        pWaitingQueueTail = o->phPrev;
-        o->phPrev->phNext = NULL;
+        return NULL;
     }
-    return o;
 }
-*/
+
 Thread *GetThreadFromWaitingqueue(Thread *thread)
 {
     Thread *o = pWaitingQueueHead;
@@ -170,17 +165,7 @@ Thread *GetThreadFromWaitingqueue(Thread *thread)
             return o;
         }
     }
-    /*
-    else if (o->phNext == NULL)
-    {
-        pWaitingQueueTail = NULL;
-        pWaitingQueueTail = NULL;
-    }
-    else
-    {
-        pWaitingQueueTail = o->phPrev;
-        o->phPrev->phNext = NULL;
-    }*/
+
     return o;
 }
 BOOL DeleteObject(Thread *pObj)
@@ -403,23 +388,28 @@ thread_t thread_self()
 }
 int thread_exit(void *retval)
 {
-    printf("exit\n");
+ 
     Thread *thread = pCurrentThead;
     thread->exitCode = *(int *)retval;
 
-    printf("exit code %d \n", thread->exitCode);
     Thread *newThread;
+    
     InsertObjectIntoObjFreeList(thread);
+   
     thread->status = THREAD_STATUS_ZOMBIE;
 
     for (int i = 0; i < MAX_READYQUEUE_NUM; i++)
     {
         if (pReadyQueueEnt[i].queueCount != 0)
         {
+
             newThread = GetThreadFromReadyqueueHead(i);
+
             DeleteObject(newThread);
+            
             newThread->status = THREAD_STATUS_RUN;
-            __ContextSwitch(thread->pid, newThread->pid);
+            __ContextSwitch(0, newThread->pid);
+            pCurrentThead=newThread;
             exit(1);
             break;
         }
@@ -430,23 +420,17 @@ pid_t ppid = 1;
 void sigchild_handler(int signum)
 {
    
+   Thread *waitthread=pWaitingQueueHead;
+
+   for(;waitthread->pid!=getpid();waitthread=waitthread->phNext){
+
+   }
+    
     if (signum == SIGCHLD)
     {
-        // GetThreadFromWaitingqueue(prethread);
-        // printf("watingqueue\n");
-        // InsertReadyQueueToTail(prethread, prethread->priority);
-        // printf("readyqueue\n");
-        // prethread->status = THREAD_STATUS_READY;
-        // printf("status %d\n", pThreadTbEnt[tid].pThread->exitCode);
-        // *(int *)*retval = pThreadTbEnt[tid].pThread->exitCode;
-        // printf("retval\n");
-        // GetThreadFromWaitingqueue(pThreadTbEnt[tid].pThread);
-        // printf("waitigqueu\n");
-        // pThreadTbEnt[tid].bUsed = 0;
-        // //printf("dsds\n");
-        // free(pThreadTbEnt[tid].pThread);
-        printf("sighandelr\n");
-      
+         GetThreadFromWaitingqueue(waitthread);
+         InsertReadyQueueToTail(waitthread, waitthread->priority);   
+         waitthread->status = THREAD_STATUS_READY;
     }
 }
 
@@ -455,12 +439,12 @@ int thread_join(thread_t tid, void **retval)
 
     Thread *newthread;
     Thread *prethread = pCurrentThead;
+   
 
-    //sidgeddset(&set,SIGUSR2);
-    //signal(SIGCHLD,SIG_IGN);
     struct sigaction act;
     act.sa_handler = sigchild_handler;
     act.sa_flags = SA_NOCLDSTOP  ;
+    
     sigaction(SIGCHLD, &act, NULL);
     if (pThreadTbEnt[tid].bUsed == 0)
     {
@@ -478,28 +462,36 @@ int thread_join(thread_t tid, void **retval)
     else
     {
         pCurrentThead->status = THREAD_STATUS_WAIT;
-        
         for (int i = 0; i < MAX_READYQUEUE_NUM; i++)
         {
             if (pReadyQueueEnt[i].queueCount != 0)
             {
-                newthread = GetThreadFromReadyqueueHead(i);
+               //newthread = GetThreadFromReadyqueueHead(i);
+             newthread=SelectThreadFromReadyqueueHead(i);
                 break;
             }
         }
+        DeleteObject(pCurrentThead);
         InsertObjectIntoObjFreeList(pCurrentThead);
-        // printf("join before pause %d %d\n", newthread->pid, pCurrentThead->pid);
-          newthread->status=THREAD_STATUS_RUN;
-        __ContextSwitch(pCurrentThead->pid, newthread->pid);
        
-        pCurrentThead = newthread;
+          newthread->status=THREAD_STATUS_RUN;
+        //__ContextSwitch(pCurrentThead->pid, newthread->pid);    
+        //pCurrentThead = newthread;
         ppid = pThreadTbEnt[tid].pThread->pid;
       
         pause();
-        printf("join after pause %d %d\n", ppid, tid);
+         int *rv=(int*)malloc(sizeof(int));
+        *rv=pThreadTbEnt[tid].pThread->exitCode;
+        *retval=rv;
+         
+        GetThreadFromWaitingqueue(pThreadTbEnt[tid].pThread);
+
+    
+        pThreadTbEnt[tid].bUsed = 0;
+    
+        free(pThreadTbEnt[tid].pThread);
 
         return 0;
     }
 }
 
-//Watingqueue   zombie status compare?

@@ -49,18 +49,11 @@ int main() {
     thread_t tid;
     int arg = 100;
     Init();
-    printf("thread start2\n");
+  
     thread_create(&tid, NULL, 0, (void *)TestCase1, 0);
     RunScheduler();
 
     while (1) {
     }
-    // while (1) {
-    //  if (pThreadTbEnt[i].bUsed == 1) {
-    //    printf("%d\n", i);
-    //   i++;
-    //} else {
-    //  break;
-    // }
-    // }
+   
 }
