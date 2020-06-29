@@ -8,12 +8,11 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <unistd.h>
-#define STACK_SIZE 1024 * 64
-#define HASH_TBL_SIZE (8)
 
-#define TIMESLICE (1.8)
+#define TIMESLICE (2)
 #define MAX_READYQUEUE_NUM (8)
 #define MAX_THREAD_NUM (64)
+#define STACK_SIZE 1024 * 64
 
 typedef int BOOL;
 typedef int thread_t;
@@ -56,26 +55,15 @@ ReadyQueueEnt pReadyQueueEnt[MAX_READYQUEUE_NUM];
 Thread *pWaitingQueueHead;
 Thread *pWaitingQueueTail;
 ThreadTblEnt pThreadTbEnt[MAX_THREAD_NUM];
-Thread *GetThreadFromWaitingqueue(Thread *thread); //
 
 int thread_create(thread_t *thread, thread_attr_t *attr, int priority,
                   void *(*start_routine)(void *), void *arg);
 int thread_suspend(thread_t tid);
 int thread_cancel(thread_t tid);
 int thread_resume(thread_t tid);
-thread_t thread_self();
-void InsertReadyQueueToTail(Thread *thread, int priority);
-void Init();
-Thread *GetThreadFromReadyqueueHead(int priority);
-void InsertObjectToTail(Thread *pObj, int ObjNum);
-void InsertObjectToHead(Thread *pObj, int objNum);
-Thread *GetObjectByNum(thread_t tid);
-Thread *GetObjectFromObjFreeList();
-BOOL DeleteObject(Thread *pObj);
-void InsertObjectIntoObjFreeList(Thread *pObj);
-
 int thread_join(thread_t tid, void **retval);
+thread_t thread_self();
 int thread_exit(void *retval);
 
-void child_handler(int signo, siginfo_t *info, void* context);
+
 #endif /* __THREAD_H__ */

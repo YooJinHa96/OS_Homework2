@@ -1,11 +1,12 @@
 #include "Scheduler.h"
 #include "Init.h"
 #include "Thread.h"
+#include "hw2.h"
+void sig_handler(int sign);
 void sig_handler(int sign)
 {
     if (sign == SIGALRM)
     {
-        alarm(TIMESLICE);
         int count = 0;
         int t_priority;
         Thread *newThread;
@@ -19,6 +20,23 @@ void sig_handler(int sign)
         }
         if (count == MAX_READYQUEUE_NUM)
         {
+
+            while (1)
+                ;
+        }
+        else if (pCurrentThread == NULL)
+        { // thread test case start
+            pCurrentThread = GetThreadFromReadyqueueHead(0);
+            if (pCurrentThread != NULL)
+            {
+                kill(pCurrentThread->pid, SIGCONT);
+            } // Assume Testcase prirority = 0
+            else if (pCurrentThread == NULL)
+            {
+                while (1)
+                    ;
+            }
+            // alarm(TIMESLICE);
         }
         else if (count < MAX_READYQUEUE_NUM)
         {
@@ -30,10 +48,10 @@ void sig_handler(int sign)
                     t_priority = i;
                     newThread = GetThreadFromReadyqueueHead(t_priority);
                     newThread->status = THREAD_STATUS_RUN;
-                    InsertReadyQueueToTail(pCurrentThead, pCurrentThead->priority);
-                    pCurrentThead->status = THREAD_STATUS_READY;
-                    __ContextSwitch(pCurrentThead->pid, newThread->pid);
-                    pCurrentThead = newThread;
+                    InsertReadyQueueToTail(pCurrentThread, pCurrentThread->priority);
+                    pCurrentThread->status = THREAD_STATUS_READY;
+                    __ContextSwitch(pCurrentThread->pid, newThread->pid);
+                    pCurrentThread = newThread;
                     break;
                 }
             }
@@ -59,13 +77,19 @@ int RunScheduler(void)
     }
     if (count == MAX_READYQUEUE_NUM)
     {
-        // alarm(TIMESLICE);
     }
-    else if (pCurrentThead == NULL)
+    else if (pCurrentThread == NULL)
     { // thread test case start
-        pCurrentThead =
-            GetThreadFromReadyqueueHead(0); // Assume Testcase prirority = 0
-        kill(pCurrentThead->pid, SIGCONT);
+        pCurrentThread = GetThreadFromReadyqueueHead(0);
+        if (pCurrentThread != NULL)
+        {
+            kill(pCurrentThread->pid, SIGCONT);
+        } // Assume Testcase prirority = 0
+        else if (pCurrentThread == NULL)
+        {
+            while (1)
+                ;
+        }
         // alarm(TIMESLICE);
     }
     else if (count < MAX_READYQUEUE_NUM)
@@ -78,10 +102,10 @@ int RunScheduler(void)
                 t_priority = i;
                 newThread = GetThreadFromReadyqueueHead(t_priority);
                 newThread->status = THREAD_STATUS_RUN;
-                InsertReadyQueueToTail(pCurrentThead, pCurrentThead->priority);
-                pCurrentThead->status=THREAD_STATUS_READY;
-                __ContextSwitch(pCurrentThead->pid, newThread->pid);
-                pCurrentThead = newThread;
+                InsertReadyQueueToTail(pCurrentThread, pCurrentThread->priority);
+                pCurrentThread->status = THREAD_STATUS_READY;
+                __ContextSwitch(pCurrentThread->pid, newThread->pid);
+                pCurrentThread = newThread;
                 break;
             }
         }
@@ -91,7 +115,9 @@ int RunScheduler(void)
 
 void __ContextSwitch(int curpid, int newpid)
 {
-    kill(curpid, SIGSTOP);
+    if (curpid != 0)
+    {
+        kill(curpid, SIGSTOP);
+    }
     kill(newpid, SIGCONT);
-    // pCurrentThead = pThreadTbEnt[newpid].pThread;
 }

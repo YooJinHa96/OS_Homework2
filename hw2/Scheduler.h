@@ -2,10 +2,10 @@
 #define __SCHEDULER_H__
 
 #include "Thread.h"
-
+#include "hw2.h"
 int RunScheduler(void);
 void __ContextSwitch(int curpid, int newpid);
-void sig_handler(int sign);
-Thread *pCurrentThead;
+
+Thread *pCurrentThread;
 
 #endif
